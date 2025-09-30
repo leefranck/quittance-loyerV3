@@ -114,10 +114,10 @@
         .quittance {
             display: none;
             background: white;
-            padding: 40px;
+            padding: 60px;
             margin-top: 30px;
-            border: 2px solid #333;
-            border-radius: 5px;
+            border: none;
+            border-radius: 0;
         }
         
         .quittance.show {
@@ -137,9 +137,9 @@
         }
         
         .quittance-body {
-            line-height: 1.8;
+            line-height: 2;
             color: #000;
-            font-size: 14px;
+            font-size: 16px;
         }
         
         .quittance-body p {
@@ -224,16 +224,26 @@
                 size: A4;
             }
             
-            body {
-                background: white;
-                padding: 0;
-                margin: 0;
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            
+            html, body {
+                background: white !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
             }
             
             .container {
-                box-shadow: none;
-                max-width: 100%;
-                border-radius: 0;
+                box-shadow: none !important;
+                max-width: 100% !important;
+                border-radius: 0 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: white !important;
             }
             
             .header, .form-section, .button-container, .btn-print, .btn-pdf {
@@ -241,15 +251,18 @@
             }
             
             .content {
-                padding: 0;
+                padding: 0 !important;
+                margin: 0 !important;
             }
             
             .quittance {
                 display: block !important;
-                border: 1px solid #000;
-                margin: 20mm;
-                padding: 30px;
-                page-break-inside: avoid;
+                border: none !important;
+                margin: 15mm !important;
+                padding: 25px !important;
+                page-break-inside: avoid !important;
+                background: white !important;
+                box-shadow: none !important;
             }
         }
     </style>
