@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Générateur de Quittance de Loyer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            max-width: 900px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .form-section {
+            margin-bottom: 30px;
+        }
+        
+        .form-section h2 {
+            color: #667eea;
+            font-size: 20px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 600;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .button-container {
+            text-align: center;
+            margin-top: 30px;
+        }
+        
+        .btn-generate {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 50px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-generate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+        
+        .btn-generate:active {
+            transform: translateY(0);
+        }
+        
+        .quittance {
+            display: none;
+            background: white;
+            padding: 40px;
+            margin-top: 30px;
+            border: 2px solid #333;
+            border-radius: 5px;
+        }
+        
+        .quittance.show {
+            display: block;
+        }
+        
+        .quittance-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .quittance-header h2 {
+            color: #000;
+            font-size: 24px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        
+        .quittance-body {
+            line-height: 1.8;
+            color: #000;
+            font-size: 14px;
+        }
+        
+        .quittance-body p {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+        
+        .adresse-section {
+            margin: 20px 0;
+            padding: 10px 0;
+        }
+        
+        .adresse-section p {
+            margin: 3px 0;
+        }
+        
+        .detail-reglement {
+            margin: 25px 0;
+            padding-left: 20px;
+        }
+        
+        .detail-reglement p {
+            margin: 5px 0;
+        }
+        
+        .signature-section {
+            margin-top: 30px;
+            text-align: right;
+        }
+        
+        .mentions-legales {
+            margin-top: 30px;
+            font-size: 12px;
+            font-style: italic;
+            text-align: justify;
+        }
+        
+        .btn-print {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 20px;
+            margin-right: 10px;
+            transition: background 0.3s;
+        }
+        
+        .btn-print:hover {
+            background: #45a049;
+        }
+        
+        .btn-pdf {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background 0.3s;
+        }
+        
+        .btn-pdf:hover {
+            background: #da190b;
+        }
+        
+        @media print {
+            @page {
+                margin: 0;
+                size: A4;
+            }
+            
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+            }
+            
+            .container {
+                box-shadow: none;
+                max-width: 100%;
+                border-radius: 0;
+            }
+            
+            .header, .form-section, .button-container, .btn-print, .btn-pdf {
+                display: none !important;
+            }
+            
+            .content {
+                padding: 0;
+            }
+            
+            .quittance {
+                display: block !important;
+                border: 1px solid #000;
+                margin: 20mm;
+                padding: 30px;
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏠 Générateur de Quittance de Loyer</h1>
+            <p>Créez votre quittance en un clic</p>
+        </div>
+        
+        <div class="content">
+            <div class="form-section">
+                <h2>👤 Informations du Bailleur</h2>
+                <div class="form-group">
+                    <label>Nom et Prénom</label>
+                    <input type="text" id="bailleurNom" value="Lee Jean Yves">
+                </div>
+                <div class="form-group">
+                    <label>Ville</label>
+                    <input type="text" id="bailleurVille" value="Ivry sur Seine">
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <h2>🏘️ Informations du Locataire</h2>
+                <div class="form-group">
+                    <label>Civilité et Nom</label>
+                    <input type="text" id="locataireCivilite" value="M. SWAMPILLAI REXI DAVID">
+                </div>
+                <div class="form-group">
+                    <label>Adresse du logement - Ligne 1</label>
+                    <input type="text" id="adresseLigne1" value="13 rue Truillot Bât B9 apt 258">
+                </div>
+                <div class="form-group">
+                    <label>Adresse du logement - Ligne 2</label>
+                    <input type="text" id="adresseLigne2" value="94200 Ivry sur Seine">
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <h2>💰 Informations du Loyer</h2>
+                <div class="form-group">
+                    <label>Montant du loyer (€)</label>
+                    <input type="number" id="montantLoyer" value="1060.00" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>Provisions pour charges (€)</label>
+                    <input type="number" id="montantCharges" value="210.00" step="0.01">
+                </div>
+            </div>
+            
+            <div class="button-container">
+                <button class="btn-generate" onclick="genererQuittance()">
+                    ✨ Générer la Quittance
+                </button>
+            </div>
+            
+            <div id="quittanceContainer" class="quittance">
+                <div class="quittance-header">
+                    <h2>Quittance de Loyer</h2>
+                    <p><strong id="titreQuittance"></strong></p>
+                </div>
+                
+                <div class="quittance-body">
+                    <div class="adresse-section">
+                        <p><strong>Adresse de location :</strong></p>
+                        <p id="displayAdresseLigne1"></p>
+                        <p id="displayAdresseLigne2"></p>
+                    </div>
+                    
+                    <p>Je soussigné <strong id="displayBailleurNom"></strong> propriétaire du logement désigné ci-dessus, déclare avoir reçu de <strong id="displayLocataireCivilite"></strong> la somme de <strong id="displayTotalAvecLettre"></strong>, au titre du paiement du loyer et des charges pour la période de location du <strong id="displayPeriodeDebut"></strong> au <strong id="displayPeriodeFin"></strong> et lui en donne quittance, sous réserve de tous mes droits.</p>
+                    
+                    <div class="detail-reglement">
+                        <p><strong>Détail du règlement :</strong></p>
+                        <p>Loyer <span style="float: right;"><span id="displayLoyer"></span> euro</span></p>
+                        <p>Provisions pour charges <span style="float: right;"><span id="displayCharges"></span> euro</span></p>
+                        <p><strong>Total du loyer <span style="float: right;"><span id="displayTotal"></span> euro</span></strong></p>
+                    </div>
+                    
+                    <p>Date du paiement : <strong id="displayDatePaiement"></strong></p>
+                    
+                    <div class="signature-section">
+                        <p>Fait à <strong id="displayVille"></strong>, le <strong id="displayDateFait"></strong></p>
+                    </div>
+                    
+                    <div class="mentions-legales">
+                        <p>Cette quittance annule tous les reçus qui auraient pu être établis précédemment en cas de paiement partiel du montant du présent terme. Elle est à conserver pendant cinq ans par le locataire (article 2224 du Code civil).</p>
+                    </div>
+                    
+                    <div class="button-container">
+                        <button class="btn-print" onclick="window.print()">🖨️ Imprimer</button>
+                        <button class="btn-pdf" onclick="genererPDF()">📄 Télécharger PDF</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function nombreEnLettres(nombre) {
+            const unites = ['', 'un', 'deux', 'trois', 'quatre', 'cinq', 'six', 'sept', 'huit', 'neuf'];
+            const dizaines = ['', 'dix', 'vingt', 'trente', 'quarante', 'cinquante', 'soixante', 'soixante', 'quatre-vingt', 'quatre-vingt'];
+            const dix_a_dix_neuf = ['dix', 'onze', 'douze', 'treize', 'quatorze', 'quinze', 'seize', 'dix-sept', 'dix-huit', 'dix-neuf'];
+            
+            if (nombre === 0) return 'zéro';
+            
+            let resultat = '';
+            const milliers = Math.floor(nombre / 1000);
+            const centaines = Math.floor((nombre % 1000) / 100);
+            const reste = nombre % 100;
+            
+            if (milliers > 0) {
+                if (milliers === 1) {
+                    resultat += 'mille ';
+                } else {
+                    resultat += unites[milliers] + ' mille ';
+                }
+            }
+            
+            if (centaines > 0) {
+                if (centaines === 1) {
+                    resultat += 'cent ';
+                } else {
+                    resultat += unites[centaines] + ' cent ';
+                }
+            }
+            
+            if (reste >= 10 && reste < 20) {
+                resultat += dix_a_dix_neuf[reste - 10];
+            } else {
+                const diz = Math.floor(reste / 10);
+                const unit = reste % 10;
+                
+                if (diz > 0) {
+                    resultat += dizaines[diz];
+                    if (unit > 0) {
+                        if (diz === 7 || diz === 9) {
+                            resultat += '-' + dix_a_dix_neuf[unit];
+                        } else if (diz === 8 && unit === 0) {
+                            resultat += 's';
+                        } else {
+                            resultat += '-' + unites[unit];
+                        }
+                    } else if (diz === 8) {
+                        resultat += 's';
+                    }
+                } else if (unit > 0) {
+                    resultat += unites[unit];
+                }
+            }
+            
+            return resultat.trim();
+        }
+        
+        function genererQuittance() {
+            const bailleurNom = document.getElementById('bailleurNom').value;
+            const bailleurVille = document.getElementById('bailleurVille').value;
+            const locataireCivilite = document.getElementById('locataireCivilite').value;
+            const adresseLigne1 = document.getElementById('adresseLigne1').value;
+            const adresseLigne2 = document.getElementById('adresseLigne2').value;
+            const montantLoyer = parseFloat(document.getElementById('montantLoyer').value);
+            const montantCharges = parseFloat(document.getElementById('montantCharges').value);
+            
+            const maintenant = new Date();
+            const mois = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+            const joursParMois = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+            
+            const moisPrecedent = maintenant.getMonth() === 0 ? 11 : maintenant.getMonth() - 1;
+            const anneePrecedente = maintenant.getMonth() === 0 ? maintenant.getFullYear() - 1 : maintenant.getFullYear();
+            
+            // Vérifier année bissextile
+            if (anneePrecedente % 4 === 0 && (anneePrecedente % 100 !== 0 || anneePrecedente % 400 === 0)) {
+                joursParMois[1] = 29;
+            }
+            
+            const nomMois = mois[moisPrecedent];
+            const annee = anneePrecedente;
+            const dernierJour = joursParMois[moisPrecedent];
+            const total = montantLoyer + montantCharges;
+            
+            // Conversion en lettres
+            const partieEntiere = Math.floor(total);
+            const partieCentimes = Math.round((total - partieEntiere) * 100);
+            const totalEnLettres = nombreEnLettres(partieEntiere) + ' et ' + nombreEnLettres(partieCentimes) + ' centimes';
+            
+            const jour = maintenant.getDate().toString().padStart(2, '0');
+            const moisActuel = (maintenant.getMonth() + 1).toString().padStart(2, '0');
+            const anneeActuelle = maintenant.getFullYear();
+            
+            // Remplir le document
+            document.getElementById('titreQuittance').textContent = 'Quittance de loyer du mois de ' + nomMois + ' ' + annee;
+            document.getElementById('displayAdresseLigne1').textContent = adresseLigne1;
+            document.getElementById('displayAdresseLigne2').textContent = adresseLigne2;
+            document.getElementById('displayBailleurNom').textContent = bailleurNom;
+            document.getElementById('displayLocataireCivilite').textContent = locataireCivilite;
+            document.getElementById('displayTotalAvecLettre').textContent = total.toFixed(2) + ' euro (' + totalEnLettres + ')';
+            document.getElementById('displayPeriodeDebut').textContent = '01 ' + nomMois + ' ' + annee;
+            document.getElementById('displayPeriodeFin').textContent = dernierJour + ' ' + nomMois + ' ' + annee;
+            document.getElementById('displayLoyer').textContent = montantLoyer.toFixed(2);
+            document.getElementById('displayCharges').textContent = montantCharges.toFixed(2);
+            document.getElementById('displayTotal').textContent = total.toFixed(2);
+            document.getElementById('displayDatePaiement').textContent = '10 ' + nomMois + ' ' + annee;
+            document.getElementById('displayVille').textContent = bailleurVille;
+            document.getElementById('displayDateFait').textContent = jour + ' ' + mois[maintenant.getMonth()] + ' ' + anneeActuelle;
+            
+            document.getElementById('quittanceContainer').classList.add('show');
+            document.getElementById('quittanceContainer').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function genererPDF() {
+            // Vérifier si html2pdf est chargé
+            if (typeof html2pdf === 'undefined') {
+                alert('La bibliothèque PDF est en cours de chargement. Veuillez réessayer dans quelques secondes.');
+                return;
+            }
+            
+            const element = document.getElementById('quittanceContainer');
+            const nomMois = document.getElementById('titreQuittance').textContent.replace(/\s+/g, '_');
+            const locataire = document.getElementById('locataireCivilite').value.replace(/\s+/g, '_');
+            
+            const buttons = element.querySelector('.button-container');
+            const originalDisplay = buttons.style.display;
+            buttons.style.display = 'none';
+            
+            const opt = {
+                margin: [10, 10, 10, 10],
+                filename: `Quittance_${locataire}_${nomMois}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { 
+                    scale: 2,
+                    useCORS: true,
+                    logging: false
+                },
+                jsPDF: { 
+                    unit: 'mm', 
+                    format: 'a4', 
+                    orientation: 'portrait' 
+                }
+            };
+            
+            html2pdf().set(opt).from(element).save().then(() => {
+                buttons.style.display = originalDisplay;
+            }).catch((error) => {
+                console.error('Erreur PDF:', error);
+                buttons.style.display = originalDisplay;
+                alert('Erreur lors de la génération du PDF. Veuillez réessayer.');
+            });
+        }
+    </script>
+</body>
+</html>
